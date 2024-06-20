@@ -13,6 +13,9 @@ void WifiSetup(){
  WiFi.softAP(ssid); /* אתה יכול להסיר את פרמטר הסיסמה אם אתה רוצה שה-AP יהיה פתוח. */
  // WiFi.softAP(ssid, password);
  server.on("/", handleRoot); // פרמטר ראשון מה הכתובת על השרת (כמו בנוד) הפרמטר השני מה יופעל
+ server.on("/GetValue", sendLdrValueAsJson); // הוספת endpoint ל-getvalue
+
+ //server.on("/GetValue", sendLdrValueAsJson);//הפרמטר השני שולח את הערך של LDR לתוך הJISON
  server.onNotFound(handleNotFound); // מה קורה במידה ויש לי אנד פויינט שלא נמצא
  server.begin(); // מפעיל את הסרוור (מוציא לפועל את כל ההכנות)
 }
@@ -97,14 +100,15 @@ void handleRoot(){
   strcat(html, "</form>");
 
   strcat(html, "<script>");
-  strcat(html, "async function logMovies() {");
-  strcat(html, "const response = await fetch('/GetValue');");
-  strcat(html, "const movies = await response.json();");//{Ldr:13}
-  strcat(html, "document.getElementById('LdrVal').innerHTML=movies.Ldr;");
-  strcat(html, "}");
-  strcat(html, "setInterval(logMovies, 1000)");
+    strcat(html, "async function logMovies() {");
+    strcat(html, "const response = await fetch('/GetValue');");
+    strcat(html, "const data = await response.json();"); // {Ldr:13}
+    strcat(html, "document.getElementById('LdrVal').innerHTML = data.Ldr;");
+    strcat(html, "}");
+    strcat(html, "setInterval(logMovies, 1000)");
+    strcat(html, "</script>");
 
-  strcat(html, "</script>");
+ 
   // the end of the body
   strcat(html, "</body>");
   // the end of my html documnet
@@ -112,8 +116,14 @@ void handleRoot(){
 
   server.send(200, "text/html", html);
 }
+//פונק שמעדכנת את המסך כל רגע 
 
-
+void sendLdrValueAsJson() {
+    String json = "{\"Ldr\":";
+    json += String(LdrVal);
+    json += "}";
+    server.send(200, "application/json", json);
+}
 
 
 
